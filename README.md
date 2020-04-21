@@ -4,6 +4,7 @@
 [![build status][3]][4]
 [![docs.rs docs][5]][6]
 [![license][7]][8]
+[![AppVeyor status][9]][10]
 
 ## Installation
 
@@ -42,7 +43,6 @@ For convenience, the [`PathClean`] trait is exposed and comes implemented for [`
 ## License
 [MIT](./LICENSE-MIT) OR [Apache-2.0](./LICENSE-APACHE)
 
-
 [1]: https://img.shields.io/crates/v/path-clean.svg?style=flat-square
 [2]: https://crates.io/crates/path-clean
 [3]: https://img.shields.io/travis/danreeves/path-clean.svg?style=flat-square
@@ -51,4 +51,5 @@ For convenience, the [`PathClean`] trait is exposed and comes implemented for [`
 [6]: https://docs.rs/path-clean
 [7]: https://img.shields.io/crates/l/path-clean.svg?style=flat-square
 [8]: #license
-
+[9]: https://ci.appveyor.com/api/projects/status/q0vuym9v80k4g6px?svg=true
+[10]: https://ci.appveyor.com/project/rcook/absolute-path
