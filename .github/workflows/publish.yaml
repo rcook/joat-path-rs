@@ -43,8 +43,6 @@ jobs:
       - name: Publish package
         shell: bash
         run: |
-          ${{ env.CARGO }} publish --dry-run ${{ env.TARGET_ARGS }}
-        #run: |
-        #  ${{ env.CARGO }} publish --token ${{ env.CRATES_IO_API_TOKEN }} ${{ env.TARGET_ARGS }}
-        #env:
-        #  CRATES_IO_API_TOKEN: ${{ secrets.CRATES_IO_API_TOKEN }}
+          ${{ env.CARGO }} publish --token ${{ env.CRATES_IO_API_TOKEN }} ${{ env.TARGET_ARGS }}
+        env:
+          CRATES_IO_API_TOKEN: ${{ secrets.CRATES_IO_API_TOKEN }}
