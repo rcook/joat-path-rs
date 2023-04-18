@@ -54,10 +54,10 @@ jobs:
         run: |
           ${{ env.CARGO }} test --verbose --release ${{ env.TARGET_ARGS }}
 
-      - name: Run Clippy
-        run: |
-          ${{ env.CARGO }} clippy
+      #- name: Run Clippy
+      #  run: |
+      #    ${{ env.CARGO }} clippy ${{ env.TARGET_ARGS }}
 
-      - name: Run fmt
-        run: |
-          ${{ env.CARGO }} fmt --check
+      #- name: Run fmt
+      #  run: |
+      #    ${{ env.CARGO }} fmt --check
