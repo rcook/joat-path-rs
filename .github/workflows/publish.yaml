@@ -1,0 +1,48 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      CARGO: cargo
+      CARGO_TERM_COLOR: always
+      TARGET_ARGS: --target x86_64-unknown-linux-gnu
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Build (debug)
+        run: |
+          ${{ env.CARGO }} build --verbose ${{ env.TARGET_ARGS }}
+
+      - name: Run tests (debug)
+        run: |
+          ${{ env.CARGO }} test --verbose ${{ env.TARGET_ARGS }}
+
+      - name: Build (release)
+        run: |
+          ${{ env.CARGO }} build --verbose --release ${{ env.TARGET_ARGS }}
+
+      - name: Run tests (release)
+        run: |
+          ${{ env.CARGO }} test --verbose --release ${{ env.TARGET_ARGS }}
+
+      - name: Run Clippy
+        run: |
+          ${{ env.CARGO }} clippy ${{ env.TARGET_ARGS }}
+
+      - name: Run fmt
+        run: |
+          ${{ env.CARGO }} fmt --check
+
+      - name: Publish package
+        shell: bash
+        run: |
+          ${{ env.CARGO }} publish --token ${{ env.CRATES_IO_API_TOKEN }} ${{ env.TARGET_ARGS }}
+        env:
+          CRATES_IO_API_TOKEN: ${{ secrets.CRATES_IO_API_TOKEN }}
