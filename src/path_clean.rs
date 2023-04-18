@@ -399,7 +399,7 @@ where
         out_str_0
     };
 
-    if out_str_1.len() == 0 {
+    if out_str_1.is_empty() {
         ".".to_string()
     } else {
         out_str_1
