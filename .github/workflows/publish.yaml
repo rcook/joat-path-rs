@@ -34,7 +34,7 @@ jobs:
 
       - name: Run Clippy
         run: |
-          ${{ env.CARGO }} clippy ${{ env.TARGET_ARGS }}
+          ${{ env.CARGO }} clippy
 
       - name: Run fmt
         run: |
