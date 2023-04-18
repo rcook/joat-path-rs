@@ -19,7 +19,7 @@
 //!
 //! ```rust
 //! use std::path::PathBuf;
-//! use path_clean::{clean, PathClean};
+//! use joat_path::{clean, PathClean};
 //! assert_eq!(clean("hello/world/.."), "hello");
 //! assert_eq!(
 //!     PathBuf::from("/test/../path/").clean(),
