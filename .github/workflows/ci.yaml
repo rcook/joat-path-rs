@@ -38,6 +38,10 @@ jobs:
       - name: Check out
         uses: actions/checkout@v3
 
+      - name: Set up Clippy
+        run: |
+          rustup component add clippy --toolchain nightly-${{ matrix.target }}
+
       - name: Build (debug)
         run: |
           ${{ env.CARGO }} build --verbose ${{ env.TARGET_ARGS }}
