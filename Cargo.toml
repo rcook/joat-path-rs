@@ -2,7 +2,7 @@
 authors = ["Richard Cook", "Dan Reeves"]
 description = "Absolute paths"
 homepage = "https://github.com/rcook/joat-path-rs/"
-license = "MIT or Apache-2.0"
+license = "MIT"
 name = "joat-path"
 version = "0.0.5"
 edition = "2021"
