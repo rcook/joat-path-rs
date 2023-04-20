@@ -24,9 +24,8 @@
 //!     PathBuf::from("/path")
 //! );
 //! ```
-
+use self::internal::PathCharacteristics;
 use std::path::PathBuf;
-use std::str::pattern::{Pattern, ReverseSearcher};
 
 /// The Clean trait implements a `clean` method. It's recommended you use the provided [`clean`]
 /// function.
@@ -42,39 +41,69 @@ impl PathClean<PathBuf> for PathBuf {
 }
 
 mod internal {
-    use std::str::pattern::{Pattern, ReverseSearcher};
-
-    //// Characteristics for paths
-    pub trait PathCharacteristics<'a>
-    where
-        <Self::SeparatorPattern as Pattern<'a>>::Searcher: ReverseSearcher<'a>,
-    {
-        /// Type of separator pattern
-        type SeparatorPattern: Pattern<'a>;
-
-        /// Separator pattern
-        const SEPARATOR_PATTERN: Self::SeparatorPattern;
-
+    pub trait PathCharacteristics {
         /// Primary separator character for this type of path
-        const SEPARATOR: char;
+        const CANONICAL_SEPARATOR: char;
+
+        /// Returns true if string is any valid separator character, false otherwise
+        fn is_separator(path: &str) -> bool;
+
+        /// Returns true if string starts with any valid separator character, false otherwise
+        fn starts_with_separator(path: &str) -> bool;
+
+        /// Removes separators from end of string
+        fn trim_end_matches_separator(path: &str) -> &str;
+
+        /// Split path on separators
+        fn split_on_separators(path: &str) -> Vec<&str>;
     }
 
     /// Characteristics for Unix-style paths
     /// * Path separator is always a single forward slash "/"
-    pub struct UnixPath {}
-    impl<'a> PathCharacteristics<'a> for UnixPath {
-        type SeparatorPattern = char;
-        const SEPARATOR_PATTERN: Self::SeparatorPattern = '/';
-        const SEPARATOR: char = '/';
+    pub struct UnixPath;
+
+    impl PathCharacteristics for UnixPath {
+        const CANONICAL_SEPARATOR: char = '/';
+
+        fn is_separator(path: &str) -> bool {
+            path == "/"
+        }
+
+        fn starts_with_separator(path: &str) -> bool {
+            path.starts_with('/')
+        }
+
+        fn trim_end_matches_separator(path: &str) -> &str {
+            path.trim_end_matches('/')
+        }
+
+        fn split_on_separators(path: &str) -> Vec<&str> {
+            path.split('/').collect()
+        }
     }
 
-    /// Characteristics for Windws-style paths
+    /// Characteristics for Windows-style paths
     /// * Path separator can be a single forward slash "/" or backslash "\\"
-    pub struct WindowsPath {}
-    impl<'a> PathCharacteristics<'a> for WindowsPath {
-        type SeparatorPattern = &'static [char];
-        const SEPARATOR_PATTERN: Self::SeparatorPattern = &['\\', '/'];
-        const SEPARATOR: char = '\\';
+    pub struct WindowsPath;
+
+    impl PathCharacteristics for WindowsPath {
+        const CANONICAL_SEPARATOR: char = '\\';
+
+        fn is_separator(path: &str) -> bool {
+            path == "\\" || path == "/"
+        }
+
+        fn starts_with_separator(path: &str) -> bool {
+            path.starts_with(['\\', '/'])
+        }
+
+        fn trim_end_matches_separator(path: &str) -> &str {
+            path.trim_end_matches(['\\', '/'])
+        }
+
+        fn split_on_separators(path: &str) -> Vec<&str> {
+            path.split(['\\', '/']).collect()
+        }
     }
 
     /// Get normalized version of special path if path is special
@@ -82,13 +111,9 @@ mod internal {
     /// # Arguments
     ///
     /// * `path` - Path
-    pub fn special_path<'a, P: PathCharacteristics<'a>>(path: &'a str) -> Option<String>
-    where
-        <<P as PathCharacteristics<'a>>::SeparatorPattern as Pattern<'a>>::Searcher:
-            ReverseSearcher<'a>,
-    {
-        if is_exact_match(P::SEPARATOR_PATTERN, path) {
-            return Some(P::SEPARATOR.to_string());
+    pub fn special_path<P: PathCharacteristics>(path: &str) -> Option<String> {
+        if P::is_separator(path) {
+            return Some(P::CANONICAL_SEPARATOR.to_string());
         }
         match path {
             "" => Some(String::from(".")),
@@ -103,12 +128,8 @@ mod internal {
     /// # Arguments
     ///
     /// * `path` - Path
-    pub fn is_root<'a, P: PathCharacteristics<'a>>(path: &'a str) -> bool
-    where
-        <<P as PathCharacteristics<'a>>::SeparatorPattern as Pattern<'a>>::Searcher:
-            ReverseSearcher<'a>,
-    {
-        path.starts_with(P::SEPARATOR_PATTERN)
+    pub fn is_root<P: PathCharacteristics>(path: &str) -> bool {
+        P::starts_with_separator(path)
     }
 
     /// Trim trailing path separators from end of path
@@ -116,12 +137,8 @@ mod internal {
     /// # Arguments
     ///
     /// * `path` - Path
-    pub fn trim_end_path<'a, P: PathCharacteristics<'a>>(path: &'a str) -> &'a str
-    where
-        <<P as PathCharacteristics<'a>>::SeparatorPattern as Pattern<'a>>::Searcher:
-            ReverseSearcher<'a>,
-    {
-        path.trim_end_matches(P::SEPARATOR_PATTERN)
+    pub fn trim_end_path<P: PathCharacteristics>(path: &str) -> &str {
+        P::trim_end_matches_separator(path)
     }
 
     /// Split path into segments based on path characteristics
@@ -129,12 +146,8 @@ mod internal {
     /// # Arguments
     ///
     /// * `path` - Path
-    pub fn split_path_segments<'a, P: PathCharacteristics<'a>>(path: &'a str) -> Vec<&'a str>
-    where
-        <<P as PathCharacteristics<'a>>::SeparatorPattern as Pattern<'a>>::Searcher:
-            ReverseSearcher<'a>,
-    {
-        path.split(P::SEPARATOR_PATTERN).collect()
+    pub fn split_path_segments<P: PathCharacteristics>(path: &str) -> Vec<&str> {
+        P::split_on_separators(path)
     }
 
     /// Join path segments to create a path based on path characteristics
@@ -142,12 +155,8 @@ mod internal {
     /// # Arguments
     ///
     /// * `segments` - Segments
-    pub fn join_path_segments<'a, P: PathCharacteristics<'a>>(segments: Vec<&'a str>) -> String
-    where
-        <<P as PathCharacteristics<'a>>::SeparatorPattern as Pattern<'a>>::Searcher:
-            ReverseSearcher<'a>,
-    {
-        segments.join(&P::SEPARATOR.to_string())
+    pub fn join_path_segments<P: PathCharacteristics>(segments: Vec<&str>) -> String {
+        segments.join(&P::CANONICAL_SEPARATOR.to_string())
     }
 
     /// Make an absolute path based on path characteristics
@@ -155,20 +164,8 @@ mod internal {
     /// # Arguments
     ///
     /// * `path` - Path
-    pub fn make_absolute<'a, 'b, P: PathCharacteristics<'a>>(path: &'b str) -> String
-    where
-        <<P as PathCharacteristics<'a>>::SeparatorPattern as Pattern<'a>>::Searcher:
-            ReverseSearcher<'a>,
-    {
-        P::SEPARATOR.to_string() + path
-    }
-
-    fn is_exact_match<'a, P: Pattern<'a>>(p: P, s: &'a str) -> bool {
-        let mut m = s.matches(p);
-        match (m.next(), m.next()) {
-            (Some(x), None) => x == s,
-            _ => false,
-        }
+    pub fn make_absolute<P: PathCharacteristics>(path: &str) -> String {
+        P::CANONICAL_SEPARATOR.to_string() + path
     }
 
     #[cfg(test)]
@@ -347,11 +344,7 @@ pub fn clean_windows(path: &str) -> String {
     clean_core::<internal::WindowsPath>(path)
 }
 
-fn clean_core<'a, P: internal::PathCharacteristics<'a>>(path: &'a str) -> String
-where
-    <<P as internal::PathCharacteristics<'a>>::SeparatorPattern as Pattern<'a>>::Searcher:
-        ReverseSearcher<'a>,
-{
+fn clean_core<P: PathCharacteristics>(path: &str) -> String {
     use internal::*;
 
     match special_path::<P>(path) {
