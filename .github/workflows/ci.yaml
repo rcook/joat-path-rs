@@ -27,7 +27,7 @@ jobs:
             host_os: ubuntu-latest
     runs-on: ${{ matrix.host_os }}
     steps:
-      - name: Build, test and publish Rust package
+      - name: Build and test Rust package
         uses: rcook/rust-package-action@v0.0.2
         with:
           target: ${{ matrix.target }}
