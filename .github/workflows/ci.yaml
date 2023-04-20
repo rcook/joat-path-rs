@@ -26,38 +26,8 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             host_os: ubuntu-latest
     runs-on: ${{ matrix.host_os }}
-    env:
-      CARGO: cargo
-      CARGO_TERM_COLOR: always
     steps:
-      - name: Set variables
-        shell: bash
-        run: |
-          echo "TARGET_ARGS=--target ${{ matrix.target }}" >> $GITHUB_ENV
-
-      - name: Check out
-        uses: actions/checkout@v3
-
-      - name: Build (debug)
-        run: |
-          ${{ env.CARGO }} build --verbose ${{ env.TARGET_ARGS }}
-
-      - name: Run tests (debug)
-        run: |
-          ${{ env.CARGO }} test --verbose ${{ env.TARGET_ARGS }}
-
-      - name: Build (release)
-        run: |
-          ${{ env.CARGO }} build --verbose --release ${{ env.TARGET_ARGS }}
-
-      - name: Run tests (release)
-        run: |
-          ${{ env.CARGO }} test --verbose --release ${{ env.TARGET_ARGS }}
-
-      #- name: Run Clippy
-      #  run: |
-      #    ${{ env.CARGO }} clippy ${{ env.TARGET_ARGS }}
-
-      #- name: Run fmt
-      #  run: |
-      #    ${{ env.CARGO }} fmt --check
+      - name: Build, test and publish Rust package
+        uses: rcook/rust-package-action@v0.0.2
+        with:
+          target: ${{ matrix.target }}
