@@ -16,7 +16,16 @@ cargo add joat-path
 
 ## About
 
-This is a fork of [path-clean][path-clean].
+This is a fork of [path-clean][path-clean]. The main distinguishing feature is that this
+package provides the following three APIs:
+
+* `clean`: clean paths according to rules of host operating system (i.e. Unix on Unix, Windows on Windows)
+* `clean_unix`: clean paths according to Unix rules
+* `clean_windows`: clean paths according to Windows rules
+
+This enables manipulation of Unix paths on Windows and Windows paths on Unix which has
+real-world applications. TBD: Document the real-world applications here.
+
 
 [ci-workflow]: https://github.com/rcook/joat-path-rs/actions/workflows/ci.yaml
 [crates-io]: https://crates.io/crates/joat-path
