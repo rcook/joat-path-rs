@@ -8,6 +8,6 @@ keywords = ["general"]
 license = "MIT"
 name = "joat-path"
 repository = "https://github.com/rcook/joat-path-rs"
-version = "0.0.8"
+version = "0.0.9"
 
 [dependencies]
