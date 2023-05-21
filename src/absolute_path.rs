@@ -62,59 +62,59 @@ pub fn absolute_path<B: AsRef<Path>, P: AsRef<Path>>(base_dir: B, path: P) -> Re
 
 #[cfg(test)]
 mod tests {
-    use asserts::*;
-    use helpers::*;
+    use asserts::{check_absolute_path, check_absolute_path_fails};
+    use helpers::{abs, rel};
 
     #[test]
     fn fails_if_base_dir_not_absolute() {
-        check_absolute_path_fails(abs("aa/bb/cc"), rel(""))
+        check_absolute_path_fails(abs("aa/bb/cc"), rel(""));
     }
 
     #[test]
     fn path_empty() {
-        check_absolute_path(abs("/aa/bb/cc"), rel(""), "/aa/bb/cc", 3)
+        check_absolute_path(abs("/aa/bb/cc"), rel(""), "/aa/bb/cc", 3);
     }
 
     #[test]
     fn base_dir_unnormalized_path_empty() {
-        check_absolute_path(abs("/aa/../bb/cc"), rel(""), "/bb/cc", 2)
+        check_absolute_path(abs("/aa/../bb/cc"), rel(""), "/bb/cc", 2);
     }
 
     #[test]
     fn path_single_component_relative() {
-        check_absolute_path(abs("/aa/bb/cc"), rel("dd"), "/aa/bb/cc/dd", 4)
+        check_absolute_path(abs("/aa/bb/cc"), rel("dd"), "/aa/bb/cc/dd", 4);
     }
 
     #[test]
     fn path_single_component_absolute() {
-        check_absolute_path(abs("/aa/bb/cc"), abs("/dd"), "/dd", 1)
+        check_absolute_path(abs("/aa/bb/cc"), abs("/dd"), "/dd", 1);
     }
 
     #[test]
     fn path_multiple_components_relative() {
-        check_absolute_path(abs("/aa/bb/cc"), rel("dd/ee"), "/aa/bb/cc/dd/ee", 5)
+        check_absolute_path(abs("/aa/bb/cc"), rel("dd/ee"), "/aa/bb/cc/dd/ee", 5);
     }
 
     #[test]
     fn path_multiple_components_absolute() {
-        check_absolute_path(abs("/aa/bb/cc"), abs("/dd/ee"), "/dd/ee", 2)
+        check_absolute_path(abs("/aa/bb/cc"), abs("/dd/ee"), "/dd/ee", 2);
     }
 
     #[test]
     fn path_multiple_components_unnormalized() {
-        check_absolute_path(abs("/aa/bb/cc"), rel("dd/../ee"), "/aa/bb/cc/ee", 4)
+        check_absolute_path(abs("/aa/bb/cc"), rel("dd/../ee"), "/aa/bb/cc/ee", 4);
     }
 
     #[test]
     fn both_unnormalized() {
-        check_absolute_path(abs("/aa/bb/../cc"), rel("dd/../ee"), "/aa/cc/ee", 3)
+        check_absolute_path(abs("/aa/bb/../cc"), rel("dd/../ee"), "/aa/cc/ee", 3);
     }
 
     mod asserts {
         use crate::absolute_path;
 
-        use super::helpers::*;
-        use super::platform_helpers::*;
+        use super::helpers::{abs, TestPath};
+        use super::platform_helpers::{from_test_path, path_component_count, OTHER_SEPARATOR};
 
         pub fn check_absolute_path(
             base_dir: TestPath,
@@ -130,11 +130,11 @@ mod tests {
                 from_test_path(abs(expected_path_str)).to_str().unwrap()
             );
             assert_eq!(path_component_count(&p).unwrap(), expected_component_count);
-            assert!(!p.to_str().unwrap().contains(OTHER_SEPARATOR))
+            assert!(!p.to_str().unwrap().contains(OTHER_SEPARATOR));
         }
 
         pub fn check_absolute_path_fails(p0: TestPath, p1: TestPath) {
-            assert!(absolute_path(from_test_path(p0), from_test_path(p1)).is_err())
+            assert!(absolute_path(from_test_path(p0), from_test_path(p1)).is_err());
         }
     }
 
@@ -214,8 +214,7 @@ mod tests {
 
         pub fn from_test_path(test_path: TestPath) -> PathBuf {
             let raw = match test_path {
-                Abs(s) => s,
-                Rel(s) => s,
+                Abs(s) | Rel(s) => s,
             };
             PathBuf::from(raw)
         }

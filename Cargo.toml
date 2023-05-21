@@ -1,10 +1,13 @@
 [package]
 authors = ["Richard Cook", "Dan Reeves"]
+categories = ["filesystem"]
 description = "Absolute paths"
-homepage = "https://github.com/rcook/joat-path-rs/"
+edition = "2021"
+homepage = "https://github.com/rcook/joat-path-rs"
+keywords = ["general"]
 license = "MIT"
 name = "joat-path"
+repository = "https://github.com/rcook/joat-path-rs"
 version = "0.0.8"
-edition = "2021"
 
 [dependencies]

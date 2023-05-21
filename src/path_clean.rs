@@ -33,10 +33,10 @@ pub trait PathClean<T> {
     fn clean(&self) -> T;
 }
 
-/// PathClean implemented for PathBuf
-impl PathClean<PathBuf> for PathBuf {
-    fn clean(&self) -> PathBuf {
-        PathBuf::from(clean(self.to_str().unwrap_or("")))
+/// `PathClean` implemented for `PathBuf`
+impl PathClean<Self> for PathBuf {
+    fn clean(&self) -> Self {
+        Self::from(clean(self.to_str().unwrap_or("")))
     }
 }
 
@@ -116,8 +116,7 @@ mod internal {
             return Some(P::CANONICAL_SEPARATOR.to_string());
         }
         match path {
-            "" => Some(String::from(".")),
-            "." => Some(String::from(".")),
+            "" | "." => Some(String::from(".")),
             ".." => Some(String::from("..")),
             _ => None,
         }
@@ -155,7 +154,7 @@ mod internal {
     /// # Arguments
     ///
     /// * `segments` - Segments
-    pub fn join_path_segments<P: PathCharacteristics>(segments: Vec<&str>) -> String {
+    pub fn join_path_segments<P: PathCharacteristics>(segments: &[&str]) -> String {
         segments.join(&P::CANONICAL_SEPARATOR.to_string())
     }
 
@@ -179,7 +178,7 @@ mod internal {
             assert_eq!(Some(String::from("..")), special_path::<UnixPath>(".."));
             assert_eq!(Some(String::from("/")), special_path::<UnixPath>("/"));
             assert_eq!(None, special_path::<UnixPath>("\\"));
-            assert_eq!(None, special_path::<UnixPath>("aaa"))
+            assert_eq!(None, special_path::<UnixPath>("aaa"));
         }
 
         #[test]
@@ -189,7 +188,7 @@ mod internal {
             assert_eq!(Some(String::from("..")), special_path::<WindowsPath>(".."));
             assert_eq!(Some(String::from("\\")), special_path::<WindowsPath>("/"));
             assert_eq!(Some(String::from("\\")), special_path::<WindowsPath>("\\"));
-            assert_eq!(None, special_path::<WindowsPath>("aaa"))
+            assert_eq!(None, special_path::<WindowsPath>("aaa"));
         }
 
         #[test]
@@ -230,7 +229,7 @@ mod internal {
             assert_eq!("", segments[0]);
             assert_eq!("a", segments[1]);
             assert_eq!("b", segments[2]);
-            assert_eq!("c", segments[3])
+            assert_eq!("c", segments[3]);
         }
 
         #[test]
@@ -241,14 +240,14 @@ mod internal {
             assert_eq!("a", segments[1]);
             assert_eq!("b", segments[2]);
             assert_eq!("c", segments[3]);
-            assert_eq!("", segments[4])
+            assert_eq!("", segments[4]);
         }
 
         #[test]
         fn test_split_path_segments_empty_unix() {
             let segments = split_path_segments::<UnixPath>("");
             assert_eq!(1, segments.len());
-            assert_eq!("", segments[0])
+            assert_eq!("", segments[0]);
         }
 
         #[test]
@@ -257,7 +256,7 @@ mod internal {
             assert_eq!(3, segments.len());
             assert_eq!("", segments[0]);
             assert_eq!("", segments[1]);
-            assert_eq!("", segments[2])
+            assert_eq!("", segments[2]);
         }
 
         #[test]
@@ -275,7 +274,7 @@ mod internal {
             assert_eq!("", segments[0]);
             assert_eq!("a", segments[1]);
             assert_eq!("b", segments[2]);
-            assert_eq!("c", segments[3])
+            assert_eq!("c", segments[3]);
         }
 
         #[test]
@@ -285,36 +284,36 @@ mod internal {
             assert_eq!("", segments[0]);
             assert_eq!("a", segments[1]);
             assert_eq!("b", segments[2]);
-            assert_eq!("c", segments[3])
+            assert_eq!("c", segments[3]);
         }
 
         #[test]
         fn test_join_path_segments_unix() {
-            assert_eq!("", join_path_segments::<UnixPath>(vec![]));
-            assert_eq!("a/b/c", join_path_segments::<UnixPath>(vec!["a", "b", "c"]))
+            assert_eq!("", join_path_segments::<UnixPath>(&[]));
+            assert_eq!("a/b/c", join_path_segments::<UnixPath>(&["a", "b", "c"]));
         }
 
         #[test]
         fn test_join_path_segments_windows() {
-            assert_eq!("", join_path_segments::<WindowsPath>(vec![]));
+            assert_eq!("", join_path_segments::<WindowsPath>(&[]));
             assert_eq!(
                 "a\\b\\c",
-                join_path_segments::<WindowsPath>(vec!["a", "b", "c"])
-            )
+                join_path_segments::<WindowsPath>(&["a", "b", "c"])
+            );
         }
 
         #[test]
         fn test_make_absolute_unix() {
             assert_eq!("/aaa", make_absolute::<UnixPath>("aaa"));
             assert_eq!("//aaa", make_absolute::<UnixPath>("/aaa"));
-            assert_eq!("/\\aaa", make_absolute::<UnixPath>("\\aaa"))
+            assert_eq!("/\\aaa", make_absolute::<UnixPath>("\\aaa"));
         }
 
         #[test]
         fn test_make_absolute_windows() {
             assert_eq!("\\aaa", make_absolute::<WindowsPath>("aaa"));
             assert_eq!("\\/aaa", make_absolute::<WindowsPath>("/aaa"));
-            assert_eq!("\\\\aaa", make_absolute::<WindowsPath>("\\aaa"))
+            assert_eq!("\\\\aaa", make_absolute::<WindowsPath>("\\aaa"));
         }
     }
 }
@@ -327,6 +326,7 @@ mod internal {
 /// 5. Leave intact `..` elements that begin a non-rooted path.
 ///
 /// If the result of this process is an empty string, return the string `"."`, representing the current directory.
+#[must_use]
 pub fn clean(path: &str) -> String {
     #[cfg(not(target_os = "windows"))]
     type PlatformPath = internal::UnixPath;
@@ -336,20 +336,25 @@ pub fn clean(path: &str) -> String {
     clean_core::<PlatformPath>(path)
 }
 
+#[must_use]
 pub fn clean_unix(path: &str) -> String {
     clean_core::<internal::UnixPath>(path)
 }
 
+#[must_use]
 pub fn clean_windows(path: &str) -> String {
     clean_core::<internal::WindowsPath>(path)
 }
 
+#[allow(clippy::unnecessary_unwrap)]
 fn clean_core<P: PathCharacteristics>(path: &str) -> String {
-    use internal::*;
+    use internal::{
+        is_root, join_path_segments, make_absolute, special_path, split_path_segments,
+        trim_end_path,
+    };
 
-    match special_path::<P>(path) {
-        Some(s) => return s,
-        _ => {}
+    if let Some(s) = special_path::<P>(path) {
+        return s;
     }
 
     let mut out = vec![];
@@ -384,7 +389,7 @@ fn clean_core<P: PathCharacteristics>(path: &str) -> String {
         };
     }
 
-    let out_str_0 = join_path_segments::<P>(out);
+    let out_str_0 = join_path_segments::<P>(&out);
 
     let out_str_1 = if is_root {
         make_absolute::<P>(&out_str_0)
@@ -400,16 +405,12 @@ fn clean_core<P: PathCharacteristics>(path: &str) -> String {
 }
 
 fn can_backtrack(segment: &str) -> bool {
-    match segment {
-        "." => false,
-        ".." => false,
-        _ => true,
-    }
+    !matches!(segment, "." | "..")
 }
 
 #[cfg(test)]
 mod tests {
-    use super::test_helpers::*;
+    use super::test_helpers::to_windows;
     use super::{clean_unix, clean_windows, PathClean};
 
     use std::path::PathBuf;
@@ -417,7 +418,7 @@ mod tests {
     #[test]
     fn test_empty_path_is_current_dir() {
         assert_eq!(clean_unix(""), ".");
-        assert_eq!(clean_windows(&to_windows("")), to_windows("."))
+        assert_eq!(clean_windows(&to_windows("")), to_windows("."));
     }
 
     #[test]
@@ -426,7 +427,7 @@ mod tests {
 
         for test in tests {
             assert_eq!(clean_unix(test.0), test.1);
-            assert_eq!(clean_windows(&to_windows(test.0)), to_windows(test.1))
+            assert_eq!(clean_windows(&to_windows(test.0)), to_windows(test.1));
         }
     }
 
@@ -448,7 +449,7 @@ mod tests {
 
         for test in tests {
             assert_eq!(clean_unix(test.0), test.1);
-            assert_eq!(clean_windows(&to_windows(test.0)), to_windows(test.1))
+            assert_eq!(clean_windows(&to_windows(test.0)), to_windows(test.1));
         }
     }
 
@@ -465,7 +466,7 @@ mod tests {
 
         for test in tests {
             assert_eq!(clean_unix(test.0), test.1);
-            assert_eq!(clean_windows(&to_windows(test.0)), to_windows(test.1))
+            assert_eq!(clean_windows(&to_windows(test.0)), to_windows(test.1));
         }
     }
 
@@ -493,7 +494,7 @@ mod tests {
 
         for test in tests {
             assert_eq!(clean_unix(test.0), test.1);
-            assert_eq!(clean_windows(&to_windows(test.0)), to_windows(test.1))
+            assert_eq!(clean_windows(&to_windows(test.0)), to_windows(test.1));
         }
     }
 
