@@ -3,6 +3,7 @@
 [![CI](https://github.com/rcook/joat-path-rs/actions/workflows/ci.yaml/badge.svg)][ci-workflow]
 [![Publish](https://github.com/rcook/joat-path-rs/actions/workflows/publish.yaml/badge.svg)][publish-workflow]
 [![crates.io](https://img.shields.io/crates/v/joat-path.svg)][crates-io]
+[![Docs](https://docs.rs/joat-path/badge.svg)](https://docs.rs/joat-path)
 
 Absolute paths
 
